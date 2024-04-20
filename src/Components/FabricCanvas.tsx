@@ -68,6 +68,71 @@ const FabricCanvas: React.FC = () => {
       canvasRef.current?.renderAll();
     }
   };
+  const handleRectWithText = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = new fabric.Rect({
+        left: 100,
+        top: 100,
+        width: 200,
+        height: 300,
+        fill: '#B3C8CF',
+      });
+      const text = new fabric.Textbox('Normal Text', {
+        left: rect.left ,
+        top: rect?.top + 5,
+        fontSize: 20,
+        fontFamily: 'Arial',
+        width: rect?.width
+      });
+      canvasRef.current?.add(rect);
+      canvasRef.current?.add(text);
+      canvasRef.current?.renderAll();
+    }
+  }
+
+  const handleTriangleWithText = () => {
+    const canvas = canvasRef.current;
+  if (canvas) {
+    const triangle = new fabric.Triangle({
+      left: 100,
+      top: 100,
+      width: 200,
+      height: 200,
+      fill: '#B3C8CF',
+    });
+    const textObject = new fabric.Textbox('Triangle with Text', {
+      left: triangle.left + 40,
+      top: triangle.top + 100,
+      fontSize: 20,
+      fontFamily: 'Arial',
+      width: 150,
+    });
+    canvas.add(triangle);
+    canvas.add(textObject);
+    canvas.renderAll();
+  }
+  };
+  
+  const handleTrapezoidWithText = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const trapezoid = new fabric.Path('M 100 100 L 200 100 L 250 200 L 50 200 z', {
+        fill: '#B3C8CF',
+      });
+      const textObject = new fabric.Textbox('Trapezoid with Text', {
+        left: 100,
+        top: 105,
+        fontSize: 20,
+        fontFamily: 'Arial',
+        width: 200,
+      });
+      canvas.add(trapezoid);
+      canvas.add(textObject);
+      canvas.renderAll();
+    }
+  };
+  
   useEffect(() => {
     
       const canvas = new fabric.Canvas('canvas');
@@ -85,7 +150,9 @@ const FabricCanvas: React.FC = () => {
     <div>
       <button onClick={handleAddBulletText}>Add Bullet Text</button>
       <button onClick={handleAddNormalText}>Add Normal Text</button>
-      <button onClick={addRectangle}>Add Rectangle</button>
+      <button onClick={handleRectWithText}>Rect with Text</button>
+      <button onClick={handleTriangleWithText}>Triangle with Text</button>
+      <button onClick={handleTrapezoidWithText}>Trapezoid with Text</button>
       <button onClick={removeObject}>Delete</button>
       <h2>Canvas :</h2>
       <canvas id='canvas' style={{border : '1px solid black'}} width={800} height={600} />
