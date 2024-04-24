@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { fabric } from 'fabric';
 import { IExtendedTextBoxOptions, renderBulletOrNumTextLine } from './bulletscode';
+import '../Utils/BulletText'
 
 
 const FabricCanvas: React.FC = () => {
@@ -8,24 +9,28 @@ const FabricCanvas: React.FC = () => {
   
   const addBulletText = () => {
 
-    const BulletText = new fabric.Textbox('Bullet Points', {
-      fontFamily: 'sans-serif',
-      lineHeight: 1.4,
-      left: 100,
-      top: 150,
-      width: 450,
-      fontSize: 20,
-      objectCaching: false,
-      isWrapping: false,
-      listType: 'bullet',
-      listBullet: '\u2022',
-      listCounter: 0,
-      fill: '#404040',
-    } as IExtendedTextBoxOptions);
-    BulletText._renderTextLine = renderBulletOrNumTextLine;
+    const BulletText = new fabric.StaticText({
+      text:'Click to add some text.',
+      fontSize: 12,
+      width: 250,
+      fontFamily: "Open Sans",
+      borderWidth: 0,
+      borderStyle: 'none',
+      borderFill: "rgb(0,0,0)",
+      listStyle: 'none',
+    });
+    // BulletText.toggleBulletOnText();
     canvasRef.current?.add(BulletText);
+    BulletText.toggleBulletOnText();
     canvasRef.current?.renderAll();
   };
+const ToggleBulletOnText = () => {
+    let obj = canvasRef.current?.getActiveObject();
+    if(obj && obj.type === "StaticText"){
+   obj.toggleBulletOnText();
+
+    }
+  }
 
   const addNormalText = () => {
     const text = new fabric.Textbox('Normal Text', {
@@ -81,9 +86,10 @@ const FabricCanvas: React.FC = () => {
       const text = new fabric.Textbox('Normal Text', {
         left: rect.left ,
         top: rect?.top + 5,
+        textAlign:'center',
         fontSize: 20,
         fontFamily: 'Arial',
-        width: rect?.width
+        width: rect?.width,
       });
       canvasRef.current?.add(rect);
       canvasRef.current?.add(text);
@@ -102,11 +108,12 @@ const FabricCanvas: React.FC = () => {
       fill: '#B3C8CF',
     });
     const textObject = new fabric.Textbox('Triangle with Text', {
-      left: triangle.left + 40,
-      top: triangle.top + 100,
+      left: triangle.left,
+      top: triangle.top + 150,
       fontSize: 20,
+      textAlign:'center',
       fontFamily: 'Arial',
-      width: 150,
+      width: triangle.width,
     });
     canvas.add(triangle);
     canvas.add(textObject);
@@ -121,11 +128,13 @@ const FabricCanvas: React.FC = () => {
         fill: '#B3C8CF',
       });
       const textObject = new fabric.Textbox('Trapezoid with Text', {
-        left: 100,
-        top: 105,
+        left: trapezoid.left,
+        top: 170,
         fontSize: 20,
         fontFamily: 'Arial',
-        width: 200,
+        textAlign:'center',
+        width: trapezoid?.width,
+        // height: trapezoid?.getScaledHeight(),
       });
       canvas.add(trapezoid);
       canvas.add(textObject);
@@ -134,8 +143,9 @@ const FabricCanvas: React.FC = () => {
   };
   
   useEffect(() => {
-    
-      const canvas = new fabric.Canvas('canvas');
+
+      const canvas = new fabric.Canvas('canvas',{preserveObjectStacking:true});
+      window.canvas = canvas;
 
       canvasRef.current = canvas;
 
@@ -149,6 +159,7 @@ const FabricCanvas: React.FC = () => {
   return (
     <div>
       <button onClick={handleAddBulletText}>Add Bullet Text</button>
+      {/*<button onClick={ToggleBulletOnText}>Apply Bullets</button>*/}
       <button onClick={handleAddNormalText}>Add Normal Text</button>
       <button onClick={handleRectWithText}>Rect with Text</button>
       <button onClick={handleTriangleWithText}>Triangle with Text</button>
