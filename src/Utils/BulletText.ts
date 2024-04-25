@@ -29,6 +29,7 @@ fabric.Text.prototype.initDimensions = function() {
     if (this.__skipDimension) {
         return;
     }
+    if(this.name === 'shapeText') return;
     this._splitText();
     this._clearCache();
     this.width = this.calcTextWidth() + (this._getLineLeftOffset(1) || this.cursorWidth);
@@ -587,6 +588,7 @@ export class StaticTextObject extends fabric.Textbox {
 
 
         this.callSuper("_renderTextLine", method, ctx, line, left, top, lineIndex);
+        if(this.name === 'shapeText') return;
         const { text } = this.getLineBulletText(lineIndex);
         if (text) {
             top -= this.fontSize * this._fontSizeFraction;

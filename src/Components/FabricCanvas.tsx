@@ -1,11 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import { fabric } from 'fabric';
-import { IExtendedTextBoxOptions, renderBulletOrNumTextLine } from './bulletscode';
 import '../Utils/BulletText'
 
 
 const FabricCanvas: React.FC = () => {
   const canvasRef = useRef<fabric.Canvas | null>(null);
+  var multiply = fabric.util.multiplyTransformMatrices;
+  var invert = fabric.util.invertTransform;
   
   const addBulletText = () => {
 
@@ -86,11 +87,22 @@ const ToggleBulletOnText = () => {
       const text = new fabric.Textbox('Normal Text', {
         left: rect.left ,
         top: rect?.top + 5,
+        lockMovementX:true,
+        lockMovementY:true,
         textAlign:'center',
+        hasBorders:false,
         fontSize: 20,
         fontFamily: 'Arial',
         width: rect?.width,
+        fixedWidth: rect?.width,
+        hasControls:false,
+        shape:rect,
       });
+      rect.text = text;
+      relateTextObj(rect);
+      rect.on('moving',updateShapeText);
+      rect.on('scaling',updateShapeText);
+      rect.on('rotating',updateShapeText);
       canvasRef.current?.add(rect);
       canvasRef.current?.add(text);
       canvasRef.current?.renderAll();
@@ -109,12 +121,23 @@ const ToggleBulletOnText = () => {
     });
     const textObject = new fabric.Textbox('Triangle with Text', {
       left: triangle.left,
-      top: triangle.top + 150,
-      fontSize: 20,
+      top: triangle.top + 100,
+      fontSize: 12,
+      lockMovementX:true,
+      lockMovementY:true,
       textAlign:'center',
       fontFamily: 'Arial',
       width: triangle.width,
+      fixedWidth: triangle.width,
+      hasControls:false,
+      hasBorders:false,
+      shape:triangle,
     });
+    triangle.text = textObject;
+    relateTextObj(triangle);
+    triangle.on('moving',updateShapeText);
+    triangle.on('scaling',updateShapeText);
+    triangle.on('rotating',updateShapeText);
     canvas.add(triangle);
     canvas.add(textObject);
     canvas.renderAll();
@@ -129,25 +152,87 @@ const ToggleBulletOnText = () => {
       });
       const textObject = new fabric.Textbox('Trapezoid with Text', {
         left: trapezoid.left,
-        top: 170,
-        fontSize: 20,
+        top: trapezoid.top,
+        lockMovementX:true,
+        lockMovementY:true,
+        fontSize: 12,
         fontFamily: 'Arial',
         textAlign:'center',
+        name:'shapeText',
         width: trapezoid?.width,
+        fixedWidth: trapezoid?.width,
+        shape:trapezoid,
+        hasControls:false,
+        hasBorders:false,
         // height: trapezoid?.getScaledHeight(),
       });
+      trapezoid.text = textObject;
+      relateTextObj(trapezoid);
+      trapezoid.on('moving',updateShapeText);
+      trapezoid.on('scaling',updateShapeText);
+      trapezoid.on('rotating',updateShapeText);
       canvas.add(trapezoid);
       canvas.add(textObject);
       canvas.renderAll();
     }
   };
+
+  const updateShapeText = (e)=>{
+    let actObj = e.transform.target;
+    if(actObj){
+      let text = actObj.text;
+      if(!text.relationship) return;
+      let relationship = text.relationship;
+      let newTransform = multiply(
+          actObj.calcTransformMatrix(),
+          relationship
+      );
+      let opt =  fabric.util.qrDecompose(newTransform);
+      text.set({
+        flipX: false,
+        flipY: false,
+      });
+      text.setPositionByOrigin(
+          { x: opt.translateX, y: opt.translateY },
+          'center',
+          'center'
+      );
+      text.set(opt);
+      text.setCoords()
+    }
+  }
+
+  const relateTextObj = (obj)=>{
+    const canvas = canvasRef.current;
+    if(canvas){
+      var textObj  = obj.text;
+      var bossTransform = obj.calcTransformMatrix();
+      var invertedBossTransform = invert(bossTransform);
+      var desiredTransform = multiply(
+          invertedBossTransform,
+          textObj.calcTransformMatrix()
+      );
+      // save the desired relation here.
+      textObj.relationship = desiredTransform;
+
+    }
+
+  }
   
   useEffect(() => {
 
       const canvas = new fabric.Canvas('canvas',{preserveObjectStacking:true});
       window.canvas = canvas;
+    canvas.on({'text:changed':function (e) {
+        console.log('text changed',e);
+        if(e.target && e.target.shape){
+          relateTextObj(e.target.shape);
+          e.target.width = e.target.shape.width;
 
+        }
+      }})
       canvasRef.current = canvas;
+
 
 
       return () => {
