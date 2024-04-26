@@ -1,5 +1,6 @@
 import {fabric} from "fabric"
 import {groupBy, pick, uniqueId} from "lodash"
+import {IExtendedTextBoxOptions} from "../Components/bulletscode";
 
 const REGEX_VAR = new RegExp(/\`[\s*a-zA-Z0-9-_.@$!%,();:\/"|&']+?\`/g)
 
@@ -19,6 +20,7 @@ const REF_TARGET = {
     LIFT: "fill",
     SHADOW: "fill"
 }
+
 //@ts-ignore
 fabric.Textbox.prototype.lineStyles = {};
 //@ts-ignore
@@ -134,7 +136,7 @@ export class StaticTextObject extends fabric.Textbox {
         return this.textLines.map((line)=>({indentLevel:2}));
     }
 
-    initialize(options: StaticTextOptions) {
+    initialize(options:IExtendedTextBoxOptions) {
         const { text, params, styles,isBulletText,lineStyles, bulletStyle, bulletStyleMap,
             isNumberBullet, ...textOptions } = options
         this.params = params ? params : []
@@ -560,7 +562,7 @@ export class StaticTextObject extends fabric.Textbox {
         const currStyle= this.styles[lineIndex]
         const newFontSize= currStyle ? currStyle[0]?.fontSize : this.fontSize
         const style = this.getIndentStyle(newIndex);
-        if (0 !== lineIndex && this._styleMap[lineIndex].line === this._styleMap[lineIndex - 1].line) return {text:""};
+        if (0 !== lineIndex && !(this._styleMap) || !(this._styleMap) || this._styleMap[lineIndex].line === this._styleMap[lineIndex - 1].line) return {text:""};
         switch (style) {
             case "number":
                 return {text:this._getNumberBullet(newIndex),newFontSize}
@@ -912,7 +914,7 @@ export type StaticTextOptions = fabric.ITextboxOptions & {
 declare module "fabric" {
     namespace fabric {
         class StaticText extends StaticTextObject {
-            constructor(options: StaticTextOptions)
+            constructor(options: IExtendedTextBoxOptions)
         }
     }
 }

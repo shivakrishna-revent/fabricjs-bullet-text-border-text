@@ -1,6 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { fabric } from 'fabric';
 import '../Utils/BulletText'
+import {IExtendedTextBoxOptions} from "./bulletscode";
+interface shapeInstance {
+  text:fabric.Object
+  shape:fabric.Object
+}
 
 
 const FabricCanvas: React.FC = () => {
@@ -19,19 +24,17 @@ const FabricCanvas: React.FC = () => {
       borderStyle: 'none',
       borderFill: "rgb(0,0,0)",
       listStyle: 'none',
-    });
+    } as IExtendedTextBoxOptions);
     // BulletText.toggleBulletOnText();
-    canvasRef.current?.add(BulletText);
-    BulletText.toggleBulletOnText();
-    canvasRef.current?.renderAll();
-  };
-const ToggleBulletOnText = () => {
-    let obj = canvasRef.current?.getActiveObject();
-    if(obj && obj.type === "StaticText"){
-   obj.toggleBulletOnText();
-
+    if (canvasRef.current instanceof fabric.Canvas) {
+      canvasRef.current?.add(BulletText);
     }
-  }
+    BulletText.toggleBulletOnText();
+    if (canvasRef.current instanceof fabric.Canvas) {
+      canvasRef.current?.renderAll();
+    }
+  };
+
 
   const addNormalText = () => {
     const text = new fabric.Textbox('Normal Text', {
@@ -40,8 +43,11 @@ const ToggleBulletOnText = () => {
       fontSize: 20,
       fontFamily: 'Arial',
     });
-    canvasRef.current?.add(text);
-    canvasRef.current?.renderAll();
+    if (canvasRef.current instanceof fabric.Canvas) {
+      canvasRef.current?.add(text);
+
+      canvasRef.current?.renderAll();
+    }
   };
 
   const handleAddBulletText = () => {
@@ -53,27 +59,16 @@ const ToggleBulletOnText = () => {
   };
 
   const removeObject = () => {
-     const selectedObject = canvasRef.current?.getActiveObject();
-     if(selectedObject){
-       canvasRef.current?.remove(selectedObject);
-       canvasRef.current?.renderAll();
-     }
+    if (canvasRef.current instanceof fabric.Canvas) {
+      const selectedObject = canvasRef.current?.getActiveObject();
+
+      if (selectedObject) {
+        canvasRef.current?.remove(selectedObject);
+        canvasRef.current?.renderAll();
+      }
+    }
   }
 
-  const addRectangle = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        width: 100,
-        height: 100,
-        fill: '#B3C8CF',
-      });
-      canvasRef.current?.add(rect);
-      canvasRef.current?.renderAll();
-    }
-  };
   const handleRectWithText = () => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -84,7 +79,7 @@ const ToggleBulletOnText = () => {
         height: 300,
         fill: '#B3C8CF',
       });
-      const text = new fabric.Textbox('Normal Text', {
+      const text: fabric.Textbox = new fabric.Textbox('Normal Text', {
         left: rect.left ,
         top: rect?.top + 5,
         lockMovementX:true,
@@ -98,14 +93,16 @@ const ToggleBulletOnText = () => {
         hasControls:false,
         shape:rect,
       });
-      rect.text = text;
+       (rect as shapeInstance).text = text;
       relateTextObj(rect);
       rect.on('moving',updateShapeText);
       rect.on('scaling',updateShapeText);
       rect.on('rotating',updateShapeText);
-      canvasRef.current?.add(rect);
-      canvasRef.current?.add(text);
-      canvasRef.current?.renderAll();
+      if (canvasRef.current instanceof fabric.Canvas) {
+        canvasRef.current?.add(rect);
+        canvasRef.current?.add(text);
+        canvasRef.current?.renderAll();
+      }
     }
   }
 
@@ -133,7 +130,7 @@ const ToggleBulletOnText = () => {
       hasBorders:false,
       shape:triangle,
     });
-    triangle.text = textObject;
+    (triangle as shapeInstance).text = textObject;
     relateTextObj(triangle);
     triangle.on('moving',updateShapeText);
     triangle.on('scaling',updateShapeText);
@@ -150,6 +147,7 @@ const ToggleBulletOnText = () => {
       const trapezoid = new fabric.Path('M 100 100 L 200 100 L 250 200 L 50 200 z', {
         fill: '#B3C8CF',
       });
+
       const textObject = new fabric.Textbox('Trapezoid with Text', {
         left: trapezoid.left,
         top: trapezoid.top,
@@ -166,7 +164,7 @@ const ToggleBulletOnText = () => {
         hasBorders:false,
         // height: trapezoid?.getScaledHeight(),
       });
-      trapezoid.text = textObject;
+      (trapezoid as shapeInstance).text = textObject;
       relateTextObj(trapezoid);
       trapezoid.on('moving',updateShapeText);
       trapezoid.on('scaling',updateShapeText);
@@ -218,19 +216,19 @@ const ToggleBulletOnText = () => {
     }
 
   }
+
   
   useEffect(() => {
 
       const canvas = new fabric.Canvas('canvas',{preserveObjectStacking:true});
-      window.canvas = canvas;
-    canvas.on({'text:changed':function (e) {
-        console.log('text changed',e);
-        if(e.target && e.target.shape){
-          relateTextObj(e.target.shape);
-          e.target.width = e.target.shape.width;
+      // window.canvas = canvas;
+    canvas.on('text:changed',(e: fabric.IEvent): void => {
+        if(e.target && (e.target as shapeInstance).shape ){
+          relateTextObj((e.target as shapeInstance).shape);
+          e.target.width = (e.target as shapeInstance).shape.width;
 
         }
-      }})
+      })
       canvasRef.current = canvas;
 
 

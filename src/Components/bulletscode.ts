@@ -1,8 +1,12 @@
 export interface IExtendedTextBoxOptions extends fabric.ITextboxOptions {
-    listType?: string;
-    listBullet?: string;
-    listCounter?: number;
-    _renderTextLine?: Function;
+    text: string;
+    fontSize: number;
+    width: number;
+    fontFamily: string;
+    borderWidth: number;
+    borderStyle: string;
+    borderFill: string;
+    listStyle: string;
   }
   
   // The rendering method/context, line content, position, and line index are passed as parameters
