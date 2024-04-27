@@ -75,6 +75,7 @@ const FabricCanvas: React.FC = () => {
       const rect = new fabric.Rect({
         left: 100,
         top: 100,
+        name:'shape',
         width: 200,
         height: 300,
         fill: '#B3C8CF',
@@ -86,6 +87,8 @@ const FabricCanvas: React.FC = () => {
         lockMovementY:true,
         textAlign:'center',
         hasBorders:false,
+        selectable:true,
+        objectCaching:false,
         fontSize: 20,
         fontFamily: 'Arial',
         width: rect?.width,
@@ -115,6 +118,7 @@ const FabricCanvas: React.FC = () => {
       width: 200,
       height: 200,
       fill: '#B3C8CF',
+      name:'shape',
     });
     const textObject = new fabric.Textbox('Triangle with Text', {
       left: triangle.left,
@@ -122,6 +126,8 @@ const FabricCanvas: React.FC = () => {
       fontSize: 12,
       lockMovementX:true,
       lockMovementY:true,
+      selectable:true,
+      objectCaching:false,
       textAlign:'center',
       fontFamily: 'Arial',
       width: triangle.width,
@@ -146,6 +152,7 @@ const FabricCanvas: React.FC = () => {
     if (canvas) {
       const trapezoid = new fabric.Path('M 100 100 L 200 100 L 250 200 L 50 200 z', {
         fill: '#B3C8CF',
+        name:'shape'
       });
 
       const textObject = new fabric.Textbox('Trapezoid with Text', {
@@ -154,6 +161,8 @@ const FabricCanvas: React.FC = () => {
         lockMovementX:true,
         lockMovementY:true,
         fontSize: 12,
+        selectable:true,
+        objectCaching:false,
         fontFamily: 'Arial',
         textAlign:'center',
         name:'shapeText',
@@ -216,12 +225,46 @@ const FabricCanvas: React.FC = () => {
     }
 
   }
+  const selectionCreated = (e)=>{
+    if (canvasRef.current instanceof fabric.Canvas) {
+      let obj = canvasRef.current?.getActiveObject();
+      if(obj && obj.name === 'shape'){
+        (obj as shapeInstance).text.enterEditing();
+        (obj as shapeInstance).text.selectable = true;
+        (obj as shapeInstance).text.selectionStart = (obj as shapeInstance).text.text.length;
+        (obj as shapeInstance).text.selectionEnd = (obj as shapeInstance).text.text.length;
+        (obj as shapeInstance).text.objectCachingt = false;
+        canvasRef.current.renderAll();
+      }
+      else if(obj.type === 'textbox'){
+        obj.enterEditing();
+        obj.selectioStart = obj.text.length;
+        obj.selectioEnd = obj.text.length;
+      }
+    }
+  }
+  const selectionCleared = (e)=>{
+    if (canvasRef.current instanceof fabric.Canvas) {
+      if(e.deselected && e.deselected.length && e.deselected[0].name === 'shape'){
+        (e.deselected[0] as shapeInstance).text.exitEditing();
+        canvasRef.current.renderAll();
+      }
+    }
+  }
+  const objectMoving = (e)=>{
+    if (canvasRef.current instanceof fabric.Canvas) {
+      let obj = canvasRef.current?.getActiveObject();
+      if(obj && obj.name === 'shape'){
+        (obj as shapeInstance).text.exitEditing();
+      }
+    }
+  }
 
   
   useEffect(() => {
 
       const canvas = new fabric.Canvas('canvas',{preserveObjectStacking:true});
-      // window.canvas = canvas;
+      window.canvas = canvas;
     canvas.on('text:changed',(e: fabric.IEvent): void => {
         if(e.target && (e.target as shapeInstance).shape ){
           relateTextObj((e.target as shapeInstance).shape);
@@ -229,6 +272,9 @@ const FabricCanvas: React.FC = () => {
 
         }
       })
+    canvas.on('selection:created',selectionCreated)
+    canvas.on('selection:cleared',selectionCleared)
+    canvas.on('object:moving',objectMoving)
       canvasRef.current = canvas;
 
 

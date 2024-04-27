@@ -562,7 +562,7 @@ export class StaticTextObject extends fabric.Textbox {
         const currStyle= this.styles[lineIndex]
         const newFontSize= currStyle ? currStyle[0]?.fontSize : this.fontSize
         const style = this.getIndentStyle(newIndex);
-        if (0 !== lineIndex && !(this._styleMap) || !(this._styleMap) || this._styleMap[lineIndex].line === this._styleMap[lineIndex - 1].line) return {text:""};
+        if (0 !== lineIndex && this._styleMap[lineIndex].line === this._styleMap[lineIndex - 1].line) return {text:""};
         switch (style) {
             case "number":
                 return {text:this._getNumberBullet(newIndex),newFontSize}
